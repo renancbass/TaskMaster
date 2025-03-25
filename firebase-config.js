@@ -1,4 +1,4 @@
-// Configuração do Firebase
+// firebase-config.js atualizado
 const firebaseConfig = {
   apiKey: "AIzaSyDnFK90EvXNMTxgAyN3MwzEM3fAc-kPtKI",
   authDomain: "taskmasterrenan.firebaseapp.com",
@@ -9,20 +9,17 @@ const firebaseConfig = {
   appId: "G-X7EKX8Z6VH"
 };
 
-// Inicializar o Firebase
-firebase.initializeApp(firebaseConfig);
-
-// Testar conexão
-const testRef = firebase.database().ref('test');
-testRef.set({
-  message: "Conexão com Firebase funcionando!",
-  timestamp: Date.now()
-}).then(() => {
-  console.log("Conexão com Firebase estabelecida com sucesso!");
-}).catch(error => {
-  console.error("Erro ao conectar com Firebase:", error);
-});
-
-// Exportar referência ao banco de dados
+// Inicialização
+const app = firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const tasksRef = db.ref('taskmaster');
+
+// Teste simplificado de conexão
+tasksRef.child('connectionTest').set({
+  timestamp: firebase.database.ServerValue.TIMESTAMP
+})
+.then(() => console.log("Firebase conectado com sucesso!"))
+.catch(error => console.error("Erro de conexão:", error));
+
+// Exportação (se usando módulos)
+export { db, tasksRef };
