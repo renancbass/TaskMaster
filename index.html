@@ -13,6 +13,7 @@
 <body>
     <header>
         <h1>TaskMaster</h1>
+        <button id="themeToggle" class="theme-toggle">🌙</button>
     </header>
     
     <div class="container">
@@ -77,15 +78,27 @@
                         </select>
                     </div>
                 </div>
-				
-				<div class="form-group">
-					<label>Prioridade</label>
-					<div class="priority-options">
-						<label><input type="radio" name="priority" value="high" checked> Alta</label>
-						<label><input type="radio" name="priority" value="medium"> Média</label>
-						<label><input type="radio" name="priority" value="low"> Baixa</label>
-					</div>
-				</div>
+                
+                <div class="form-group">
+                    <label>Prioridade</label>
+                    <div class="priority-options">
+                        <label class="priority-option">
+                            <input type="radio" name="priority" value="high" checked>
+                            <span class="task-priority priority-high"></span>
+                            Alta
+                        </label>
+                        <label class="priority-option">
+                            <input type="radio" name="priority" value="medium">
+                            <span class="task-priority priority-medium"></span>
+                            Média
+                        </label>
+                        <label class="priority-option">
+                            <input type="radio" name="priority" value="low">
+                            <span class="task-priority priority-low"></span>
+                            Baixa
+                        </label>
+                    </div>
+                </div>
                 
                 <div class="form-group">
                     <label>Tags</label>
@@ -139,5 +152,32 @@
     <!-- Scripts JavaScript -->
     <script src="firebase-config.js"></script>
     <script src="app.js"></script>
+    
+    <!-- Script para controlar o tema -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const themeToggle = document.getElementById('themeToggle');
+            
+            // Verificar se há preferência de tema salva
+            const savedTheme = localStorage.getItem('taskMasterTheme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-theme');
+                themeToggle.textContent = '☀️';
+            }
+            
+            // Alternar tema ao clicar no botão
+            themeToggle.addEventListener('click', function() {
+                document.body.classList.toggle('dark-theme');
+                
+                if (document.body.classList.contains('dark-theme')) {
+                    themeToggle.textContent = '☀️';
+                    localStorage.setItem('taskMasterTheme', 'dark');
+                } else {
+                    themeToggle.textContent = '🌙';
+                    localStorage.setItem('taskMasterTheme', 'light');
+                }
+            });
+        });
+    </script>
 </body>
 </html>
