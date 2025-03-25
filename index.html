@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskMaster - Gerenciador de Tarefas</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Firebase App (a core do Firebase) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <!-- Firebase Database para armazenamento de dados -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+</head>
+<body>
+    <header>
+        <h1>TaskMaster</h1>
+    </header>
+    
+    <div class="container">
+        <div class="sidebar">
+            <h2>Grupos de Tarefas</h2>
+            <ul class="group-list" id="groupList">
+                <li class="active" data-group-id="all">Todas as Tarefas <span class="count">0</span></li>
+            </ul>
+            
+            <button class="btn btn-block" id="addGroupBtn">+ Novo Grupo</button>
+            
+            <h2 style="margin-top: 2rem;">Tags</h2>
+            <div class="tag-list">
+                <span class="tag work">trabalho</span>
+                <span class="tag personal">pessoal</span>
+                <span class="tag urgent">urgente</span>
+                <span class="tag later">para depois</span>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="main-header">
+                <h2>Todas as Tarefas</h2>
+                <button class="btn" id="addTaskBtn">+ Nova Tarefa</button>
+            </div>
+            
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Pesquisar tarefas...">
+            </div>
+            
+            <ul class="task-list" id="taskList">
+                <!-- As tarefas serão preenchidas via JavaScript -->
+            </ul>
+        </div>
+    </div>
+    
+    <!-- Modal para adicionar/editar tarefa -->
+    <div class="modal" id="taskModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Adicionar Nova Tarefa</h2>
+                <button class="close-modal">&times;</button>
+            </div>
+            
+            <form id="taskForm">
+                <input type="hidden" id="taskId" value="">
+                <div class="form-group">
+                    <label for="taskTitle">Título da Tarefa</label>
+                    <input type="text" id="taskTitle" required placeholder="Digite o título da tarefa">
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="taskDueDate">Data de Conclusão</label>
+                        <input type="date" id="taskDueDate">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="taskGroup">Grupo</label>
+                        <select id="taskGroup">
+                            <option value="all">Todas as Tarefas</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Tags</label>
+                    <div class="tag-selection">
+                        <span class="tag work tag-option" data-tag="trabalho">trabalho</span>
+                        <span class="tag personal tag-option" data-tag="pessoal">pessoal</span>
+                        <span class="tag urgent tag-option" data-tag="urgente">urgente</span>
+                        <span class="tag later tag-option" data-tag="para depois">para depois</span>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="taskDescription">Descrição (opcional)</label>
+                    <textarea id="taskDescription" placeholder="Adicione mais detalhes sobre a tarefa..."></textarea>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn" style="background-color: var(--light-text);" id="cancelTaskBtn">Cancelar</button>
+                    <button type="submit" class="btn">Salvar Tarefa</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Modal para adicionar grupo -->
+    <div class="modal" id="groupModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Adicionar Novo Grupo</h2>
+                <button class="close-modal">&times;</button>
+            </div>
+            
+            <form id="groupForm">
+                <input type="hidden" id="groupId" value="">
+                <div class="form-group">
+                    <label for="groupName">Nome do Grupo</label>
+                    <input type="text" id="groupName" required placeholder="Digite o nome do grupo">
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn" style="background-color: var(--light-text);" id="cancelGroupBtn">Cancelar</button>
+                    <button type="submit" class="btn">Salvar Grupo</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Menu toggle para mobile -->
+    <div class="menu-toggle" style="display: none;">☰</div>
+    
+    <!-- Scripts JavaScript -->
+    <script src="firebase-config.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
