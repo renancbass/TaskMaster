@@ -455,6 +455,39 @@
             }
         }
     </style>
+	<!-- Firebase App (a core do Firebase) -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+
+<!-- Firebase Database para armazenamento de dados -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+<!-- Inicialização do Firebase com suas configurações -->
+<script>
+  // Configuração do seu aplicativo Firebase
+  const firebaseConfig = {
+    apiKey: "AIzaSyDnFK90EvXNMTxgAyN3MwzEM3fAc-kPtKI",
+    authDomain: "taskmasterrenan.firebaseapp.com",
+    databaseURL: "https://taskmasterrenan-default-rtdb.firebaseio.com", <!-- Corrigi esta URL -->
+    projectId: "taskmasterrenan",
+    storageBucket: "taskmasterrenan.appspot.com", <!-- Corrigi esta URL -->
+    messagingSenderId: "853892676669",
+    appId: "G-X7EKX8Z6VH"
+  };
+
+  // Primeiro inicialize o Firebase
+  firebase.initializeApp(firebaseConfig);
+  
+  // DEPOIS teste a conexão
+  const testRef = firebase.database().ref('test');
+  testRef.set({
+    message: "Conexão com Firebase funcionando!",
+    timestamp: Date.now()
+  }).then(() => {
+    console.log("Conexão com Firebase estabelecida com sucesso!");
+  }).catch(error => {
+    console.error("Erro ao conectar com Firebase:", error);
+  });
+</script>
 </head>
 <body>
     <header>
@@ -593,59 +626,95 @@
         }
         
         // ====== PERSISTÊNCIA DE DADOS ======
+		// Referência ao banco de dados
+		const db = firebase.database();
+		const tasksRef = db.ref('taskmaster');
+
         // Carregar dados do localStorage
         function loadData() {
-            const savedData = localStorage.getItem('taskMasterData');
-            if (savedData) {
-                taskData = JSON.parse(savedData);
-            } else {
-                // Dados de exemplo para primeira execução
-                taskData.tasks = [
-                    {
-                        id: generateId(),
-                        title: 'Criar apresentação para reunião',
-                        dueDate: '2025-03-18',
-                        group: 'work',
-                        completed: true,
-                        tags: ['trabalho', 'urgente'],
-                        description: 'Preparar slides para a apresentação trimestral'
-                    },
-                    {
-                        id: generateId(),
-                        title: 'Comprar mantimentos',
-                        dueDate: '2025-03-20',
-                        group: 'shopping',
-                        completed: false,
-                        tags: ['pessoal'],
-                        description: 'Leite, ovos, pão, frutas'
-                    },
-                    {
-                        id: generateId(),
-                        title: 'Finalizar relatório de vendas',
-                        dueDate: '2025-03-25',
-                        group: 'work',
-                        completed: false,
-                        tags: ['trabalho'],
-                        description: 'Compilar dados do último trimestre'
-                    },
-                    {
-                        id: generateId(),
-                        title: 'Pesquisar opções para viagem',
-                        dueDate: '2025-04-01',
-                        group: 'personal',
-                        completed: false,
-                        tags: ['pessoal', 'para depois'],
-                        description: 'Verificar pacotes para férias de julho'
-                    }
-                ];
-                saveData();
+  tasksRef.once('value')
+    .then((snapshot) => {
+      if (snapshot.exists()) {
+        taskData = snapshot.val();
+      } else {
+        // Dados de exemplo para primeira execução
+        taskData = {
+          tasks: [
+            {
+              id: generateId(),
+              title: 'Criar apresentação para reunião',
+              dueDate: '2025-03-18',
+              group: 'work',
+              completed: true,
+              tags: ['trabalho', 'urgente'],
+              description: 'Preparar slides para a apresentação trimestral'
+            },
+            {
+              id: generateId(),
+              title: 'Comprar mantimentos',
+              dueDate: '2025-03-20',
+              group: 'shopping',
+              completed: false,
+              tags: ['pessoal'],
+              description: 'Leite, ovos, pão, frutas'
+            },
+            {
+              id: generateId(),
+              title: 'Finalizar relatório de vendas',
+              dueDate: '2025-03-25',
+              group: 'work',
+              completed: false,
+              tags: ['trabalho'],
+              description: 'Compilar dados do último trimestre'
+            },
+            {
+              id: generateId(),
+              title: 'Pesquisar opções para viagem',
+              dueDate: '2025-04-01',
+              group: 'personal',
+              completed: false,
+              tags: ['pessoal', 'para depois'],
+              description: 'Verificar pacotes para férias de julho'
             }
-        }
-        
-        // Salvar dados no localStorage
-        function saveData() {
-            localStorage.setItem('taskMasterData', JSON.stringify(taskData));
-        }
+          ],
+          groups: [
+            { id: 'all', name: 'Todas as Tarefas' },
+            { id: 'work', name: 'Trabalho' },
+            { id: 'personal', name: 'Pessoal' },
+            { id: 'shopping', name: 'Compras' }
+          ],
+          currentFilter: 'all'
+        };
+        saveData();
+      }
+      renderGroups();
+      renderTasks();
+    })
+    .catch((error) => {
+      console.error("Erro ao carregar dados:", error);
+      // Fallback para localStorage em caso de erro
+      const savedData = localStorage.getItem('taskMasterData');
+      if (savedData) {
+        taskData = JSON.parse(savedData);
+      }
+      renderGroups();
+      renderTasks();
+    });
+}
+
+// Salvar dados no Firebase
+function saveData() {
+  tasksRef.set(taskData)
+    .then(() => {
+      // Backup local em caso de falha na conexão
+      localStorage.setItem('taskMasterData', JSON.stringify(taskData));
+    })
+    .catch((error) => {
+      console.error("Erro ao salvar dados:", error);
+      // Salvar localmente se falhar o Firebase
+      localStorage.setItem('taskMasterData', JSON.stringify(taskData));
+    });
+}
         
         // ====== RENDERIZAÇÃO DA INTERFACE ======
         // Renderizar lista de grupos
@@ -1036,22 +1105,39 @@
         // ====== EXPORTAÇÃO E BACKUP DE DADOS ======
         // Adicionar funcionalidade para exportar dados
         function exportData() {
-            const dataStr = JSON.stringify(taskData, null, 2);
-            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-            
-            const exportFileDefaultName = 'taskmaster-backup.json';
-            
-            const linkElement = document.createElement('a');
-            linkElement.setAttribute('href', dataUri);
-            linkElement.setAttribute('download', exportFileDefaultName);
-            linkElement.click();
-        }
+  const dataStr = JSON.stringify(taskData, null, 2);
+  const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+  
+  const exportFileDefaultName = 'taskmaster-backup.json';
+  
+  const linkElement = document.createElement('a');
+  linkElement.setAttribute('href', dataUri);
+  linkElement.setAttribute('download', exportFileDefaultName);
+  linkElement.click();
+  
+  // Opcionalmente, salvar no Firebase também
+  tasksRef.set(taskData)
+    .then(() => console.log("Backup salvo no Firebase"))
+    .catch(error => console.error("Erro ao salvar backup:", error));
+}
         
         // ====== INICIALIZAÇÃO DO APLICATIVO ======
         // Inicializar aplicativo
         function initApp() {
             // Carregar dados do localStorage
             loadData();
+			// Escutar por mudanças em tempo real
+			tasksRef.on('value', (snapshot) => {
+				if (snapshot.exists()) {
+					const newData = snapshot.val();
+					// Verificar se os dados são diferentes antes de atualizar
+					if (JSON.stringify(newData) !== JSON.stringify(taskData)) {
+						taskData = newData;
+						renderGroups();
+						renderTasks();
+		}
+	}
+});
             
             // Configurar eventos
             setupEventListeners();
