@@ -12,17 +12,13 @@ const firebaseConfig = {
 // Inicializar o Firebase
 firebase.initializeApp(firebaseConfig);
 
-// Testar conexão
-const testRef = firebase.database().ref('test');
-testRef.set({
-  message: "Conexão com Firebase funcionando!",
-  timestamp: Date.now()
-}).then(() => {
-  console.log("Conexão com Firebase estabelecida com sucesso!");
-}).catch(error => {
-  console.error("Erro ao conectar com Firebase:", error);
-});
-
-// Exportar referência ao banco de dados
+// Teste de conexão simplificado
 const db = firebase.database();
 const tasksRef = db.ref('taskmaster');
+
+// Teste simplificado de conexão
+tasksRef.child('connectionTest').set({
+  timestamp: firebase.database.ServerValue.TIMESTAMP
+})
+.then(() => console.log("Firebase conectado com sucesso!"))
+.catch(error => console.error("Erro de conexão:", error));
