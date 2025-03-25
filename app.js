@@ -296,6 +296,43 @@ function openAddTaskModal() {
     });
     
     // Atualizar título do modal
+    document.querySelector('#taskModal .modal-header h2').textContent = 'Adicionar Nova Tarefa';
+    
+    // Mostrar modal
+    taskModal.classList.add('open');
+}
+
+// Abrir modal para editar tarefa
+function openEditTaskModal(task) {
+    const taskModal = document.getElementById('taskModal');
+    const taskId = document.getElementById('taskId');
+    const taskTitle = document.getElementById('taskTitle');
+    const taskDueDate = document.getElementById('taskDueDate');
+    const taskGroup = document.getElementById('taskGroup');
+    const taskDescription = document.getElementById('taskDescription');
+    
+    // Preencher formulário
+    taskId.value = task.id;
+    taskTitle.value = task.title;
+    taskDueDate.value = task.dueDate || '';
+    taskGroup.value = task.group || 'all';
+    taskDescription.value = task.description || '';
+    
+    // Selecionar prioridade
+    const priorityValue = task.priority || 'medium';
+    document.querySelector(`input[name="priority"][value="${priorityValue}"]`).checked = true;
+    
+    // Selecionar tags
+    document.querySelectorAll('.tag-option').forEach(tagElement => {
+        const tag = tagElement.dataset.tag;
+        if (task.tags && task.tags.includes(tag)) {
+            tagElement.classList.add('selected');
+        } else {
+            tagElement.classList.remove('selected');
+        }
+    });
+    
+    // Atualizar título do modal
     document.querySelector('#taskModal .modal-header h2').textContent = 'Editar Tarefa';
     
     // Mostrar modal
@@ -548,141 +585,3 @@ function initApp() {
 
 // Iniciar aplicativo quando o documento estiver pronto
 document.addEventListener('DOMContentLoaded', initApp);
-    document.querySelector('#taskModal .modal-header h2').textContent = 'Adicionar Nova Tarefa';
-    
-    // Mostrar modal
-    taskModal.classList.add('open');
-}
-
-// Abrir modal para editar tarefa
-function openEditTaskModal(task) {
-    const taskModal = document.getElementById('taskModal');
-    const taskId = document.getElementById('taskId');
-    const taskTitle = document.getElementById('taskTitle');
-    const taskDueDate = document.getElementById('taskDueDate');
-    const taskGroup = document.getElementById('taskGroup');
-    const taskDescription = document.getElementById('taskDescription');
-    
-    // Preencher formulário
-    taskId.value = task.id;
-    taskTitle.value = task.title;
-    taskDueDate.value = task.dueDate || '';
-    taskGroup.value = task.group || 'all';
-    taskDescription.value = task.description || '';
-    
-    // Selecionar prioridade
-    const priorityValue = task.priority || 'medium';
-    document.querySelector(`input[name="priority"][value="${priorityValue}"]`).checked = true;
-    
-    // Selecionar tags
-    document.querySelectorAll('.tag-option').forEach(tagElement => {
-        const tag = tagElement.dataset.tag;
-        if (task.tags && task.tags.includes(tag)) {
-            tagElement.classList.add('selected');
-        } else {
-            tagElement.classList.remove('selected');
-        }
-    });
-    
-    // Atualizar título do modal
-    document.querySelector('#taskModal .modal-header h2').textContent = 'Editar Tarefa';
-    
-    // Mostrar modal
-    taskModal.classList.add('open');
-}
-
-// Adicionar ou atualizar tarefa
-function saveTask(event) {
-    event.preventDefault();
-    
-    // Obter valores do formulário
-    const taskId = document.getElementById('taskId').value;
-    const title = document.getElementById('taskTitle').value;
-    const dueDate = document.getElementById('taskDueDate').value;
-    const group = document.getElementById('taskGroup').value;
-    const description = document.getElementById('taskDescription').value;
-    
-    // Obter tags selecionadas
-    const selectedTags = [];
-    document.querySelectorAll('.tag-option.selected').forEach(tag => {
-        selectedTags.push(tag.dataset.tag);
-    });
-    
-    if (taskId) {
-        // Atualizar tarefa existente
-        const task = taskData.tasks.find(t => t.id === taskId);
-        if (task) {
-            task.title = title;
-            task.dueDate = dueDate;
-            task.group = group;
-            task.description = description;
-            task.tags = selectedTags;
-        }
-    } else {
-        // Adicionar nova tarefa
-        const newTask = {
-            id: generateId(),
-            title,
-            dueDate,
-            group,
-            description,
-            tags: selectedTags,
-            completed: false
-        };
-        taskData.tasks.push(newTask);
-    }
-    
-    // Salvar e atualizar interface
-    saveData();
-    renderTasks();
-    renderGroups(); // Atualizar contadores
-    
-    // Fechar modal
-    document.getElementById('taskModal').classList.remove('open');
-}
-
-// Adicionar novo grupo
-function saveGroup(event) {
-    event.preventDefault();
-    
-    const groupName = document.getElementById('groupName').value;
-    
-    if (groupName) {
-        // Criar ID para o grupo (baseado no nome)
-        const groupId = groupName.toLowerCase().replace(/\s+/g, '-');
-        
-        // Verificar se o grupo já existe
-        if (!taskData.groups.some(g => g.id === groupId)) {
-            taskData.groups.push({
-                id: groupId,
-                name: groupName
-            });
-            
-            // Salvar e atualizar interface
-            saveData();
-            renderGroups();
-        }
-        
-        // Fechar modal
-        document.getElementById('groupModal').classList.remove('open');
-        document.getElementById('groupForm').reset();
-    }
-}
-
-// ====== EXPORTAÇÃO E BACKUP DE DADOS ======
-// Função para exportar dados
-function exportData() {
-    const dataStr = JSON.stringify(taskData, null, 2);
-    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-    
-    const exportFileDefaultName = 'taskmaster-backup.json';
-    
-    const linkElement = document.createElement('a');
-    linkElement.setAttribute('href', dataUri);
-    linkElement.setAttribute('download', exportFileDefaultName);
-    linkElement.click();
-    
-    // Opcionalmente, salvar no Firebase também
-    tasksRef.set(taskData)
-        .then(() => console.log("Backup salvo no Firebase"))
-        .catch(error => console.error("Erro ao salvar backup:", error));
